@@ -84,7 +84,7 @@ public class ApiRestController {
 
 	}
 
-	@GetMapping("/foods/categories")
+	@GetMapping("/categories")
 	public ResponseEntity<List<FoodCategorie>> getAllCategories() {
 		List<FoodCategorie> _categories = new ArrayList<FoodCategorie>();
 		try {
@@ -138,7 +138,7 @@ public class ApiRestController {
 		}
 	}
 
-	@GetMapping("/foods/categories/{category}")
+	@GetMapping("/categories/{category}")
 	public ResponseEntity<List<Food>> getAllTutorials(@PathVariable String category) {
 		try {
 			List<Food> foods = new ArrayList<Food>();
@@ -168,7 +168,7 @@ public class ApiRestController {
 
 	}
 
-	@GetMapping("/foods/compare/{ids}")
+	@GetMapping("/compare/{ids}")
 	public ResponseEntity<List<Food>> compareFoods(@PathVariable List<Long> ids) {
 			try {
 				List<Food> foods = new ArrayList<Food>();

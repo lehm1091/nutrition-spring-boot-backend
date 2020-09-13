@@ -28,7 +28,7 @@ import com.spring.products.app.entity.FoodCategorie;
 import com.spring.products.app.repository.FoodCategorieRepository;
 import com.spring.products.app.repository.FoodRepository;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api")
 public class ApiRestController {

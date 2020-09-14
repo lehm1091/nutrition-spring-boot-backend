@@ -53,6 +53,20 @@ public class ApiRestController {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	@PostMapping("/categories")
+	public ResponseEntity<FoodCategorie> createFood(@RequestBody FoodCategorie category) {
+
+		try {
+			
+			FoodCategorie _category = categoryRepository.save(category);
+			return new ResponseEntity<>(_category,HttpStatus.CREATED);
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 	@PostMapping("/foods/categories")
 	public ResponseEntity<Food> addCategoriesToFood(@RequestBody FoodHasCategories response) {
@@ -83,6 +97,8 @@ public class ApiRestController {
 		}
 
 	}
+	
+	
 
 	@GetMapping("/categories")
 	public ResponseEntity<List<FoodCategorie>> getAllCategories() {

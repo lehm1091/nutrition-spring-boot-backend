@@ -11,12 +11,17 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -53,14 +58,14 @@ public class ApiRestController {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	@PostMapping("/categories")
 	public ResponseEntity<FoodCategorie> createFood(@RequestBody FoodCategorie category) {
 
 		try {
-			
+
 			FoodCategorie _category = categoryRepository.save(category);
-			return new ResponseEntity<>(_category,HttpStatus.CREATED);
+			return new ResponseEntity<>(_category, HttpStatus.CREATED);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());
@@ -68,28 +73,21 @@ public class ApiRestController {
 		}
 	}
 
-	@PostMapping("/foods/categories")
-	public ResponseEntity<Food> addCategoriesToFood(@RequestBody FoodHasCategories response) {
+	@PutMapping("/foods/{foodid}/add-categories")
+	public ResponseEntity<Food> addCategoriesToFood(@PathVariable Long foodid, @RequestBody Long[] categoriesids) {
 
 		try {
-			if (response.getCategoryNames().length > 0) {
-				logger.info("response:" + response.toString());
-				Food _food = foodRepository.findById(response.getFoodId()).orElse(null);
-				List<FoodCategorie> _categories = new ArrayList<>(_food.getCategories());
-				for (String actual : response.getCategoryNames()) {
-					_categories.add(categoryRepository.findByName(actual));
-				}
-
-				_food.setCategories(new HashSet<FoodCategorie>(_categories));
-				foodRepository.save(_food);
-
-				return new ResponseEntity<>(_food, HttpStatus.CREATED);
+			Food _food = foodRepository.findById(foodid).orElse(null);
+			List<FoodCategorie> _categories = new ArrayList<>(_food.getCategories());
+			
+			List<Long> ids=new ArrayList<>();
+			for(Long actual:categoriesids) {
+				ids.add(actual);
 			}
-
-			else {
-				return new ResponseEntity<>(null, HttpStatus.EXPECTATION_FAILED);
-
-			}
+			categoryRepository.findAllById(ids).forEach(_categories::add);
+			_food.setCategories(new HashSet<FoodCategorie>(_categories));
+			foodRepository.save(_food);
+			return new ResponseEntity<>(_food, HttpStatus.OK);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());
@@ -98,7 +96,26 @@ public class ApiRestController {
 
 	}
 	
+	@GetMapping("/foods/{foodid}")
+	public ResponseEntity<Food> findOneFood(@PathVariable Long foodid) {
+
+		try {
+			Food _food = foodRepository.findById(foodid).orElse(null);
+			
+			if(_food!=null) {
+				return new ResponseEntity<>(_food, HttpStatus.OK);
+				
+			}
+			else {
+				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+			}
 	
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+	}
 
 	@GetMapping("/categories")
 	public ResponseEntity<List<FoodCategorie>> getAllCategories() {
@@ -107,11 +124,8 @@ public class ApiRestController {
 			categoryRepository.findAll().forEach(_categories::add);
 
 			if (_categories.isEmpty()) {
-				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+				return new ResponseEntity<>(_categories,HttpStatus.NOT_FOUND);
 			}
-
-			logger.info("size of list", _categories.size() + "");
-
 			return new ResponseEntity<>(_categories, HttpStatus.OK);
 		} catch (Exception e) {
 			logger.error(e.getCause().getMessage());
@@ -121,37 +135,85 @@ public class ApiRestController {
 
 	}
 
-	@GetMapping("/foods")
-	public ResponseEntity<List<Food>> getAllTutorials(@RequestParam(required = false) String name,
-			@RequestParam(required = false) Boolean all) {
-		try {
-			List<Food> foods = new ArrayList<Food>();
+	private Sort.Direction getSortDirection(String direction) {
+		if (direction.equals("asc")) {
+			return Sort.Direction.ASC;
+		} else if (direction.equals("desc")) {
+			return Sort.Direction.DESC;
+		}
 
-			if (name != null) {
-				if (name.length() < 1) {
-					foodRepository.findTop10ByOrderByIdDesc().forEach(foods::add);
-					logger.info(name);
-					logger.info("empty");
-				} else {
-					foodRepository.findByNameContaining(name).forEach(foods::add);
-					logger.info("containing");
+		return Sort.Direction.ASC;
+	}
+
+	@GetMapping("/foods")
+	public ResponseEntity<List<Food>> findFoods(
+			@RequestParam(required = false) List<Long> ids,
+			@RequestParam(required = false) String name,
+			@RequestParam(required = false) Integer page,
+			@RequestParam(required = false) Integer size,
+			@RequestParam(required = false) String[] sort) {
+
+		List<Food> foods = new ArrayList<Food>();
+		try {
+			if (ids == null && name == null && page == null && size == null && sort == null) {
+				foodRepository.findAll().forEach(foods::add);
+			} else {
+
+				if (ids != null && name == null && page == null && size == null) {
+					foodRepository.findAllById(ids).forEach(foods::add);
+				} else if (ids == null && name != null && page == null && size == null) {
+					logger.info("name " + name);
+					foodRepository.findByNameIsContaining(name).forEach(foods::add);
+
+				} else if ((ids == null && name == null) && (size > 0 && page >= 0)) {
+					Pageable pageable;
+					if (sort != null) {
+						List<Order> orders = this.getOrders(sort);
+						pageable = PageRequest.of(page, size, Sort.by(orders));
+						logger.info("inside sorted");
+					} else {
+						pageable = PageRequest.of(page, size);
+						logger.info("inside pageable");
+					}
+
+					foodRepository.findAll(pageable).forEach(foods::add);
+
 				}
 
-			} else if (all == true) {
-				foodRepository.findAll().forEach(foods::add);
-
-			} else {
-				foodRepository.findTop10ByOrderByIdDesc().forEach(foods::add);
 			}
 
 			if (foods.isEmpty()) {
-				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+				return new ResponseEntity<>(foods, HttpStatus.NOT_FOUND);
+
+			} else {
+				return new ResponseEntity<>(foods, HttpStatus.OK);
 			}
 
-			return new ResponseEntity<>(foods, HttpStatus.OK);
 		} catch (Exception e) {
+			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+
+	}
+
+	private List<Order> getOrders(String[] sort) {
+
+		List<Order> orders = new ArrayList<Order>();
+
+		if (sort[0].contains(",")) {
+			// will sort more than 2 fields
+			// sortOrder="field, direction"
+			for (String sortOrder : sort) {
+				String[] _sort = sortOrder.split(",");
+				orders.add(new Order(getSortDirection(_sort[1]), _sort[0]));
+			}
+		} else {
+			// sort=[field, direction]
+			orders.add(new Order(getSortDirection(sort[1]), sort[0]));
+		}
+
+		return orders;
+
 	}
 
 	@GetMapping("/categories/{category}")
@@ -170,41 +232,9 @@ public class ApiRestController {
 
 			return new ResponseEntity<>(foods, HttpStatus.OK);
 		} catch (Exception e) {
+			logger.error(e.toString());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-	}
-
-	@GetMapping("/foods/{id}")
-	public ResponseEntity<Food> getFoodById(@PathVariable Long id) {
-		Optional<Food> _food = foodRepository.findById(id);
-		if (_food.isPresent()) {
-			return new ResponseEntity<Food>(_food.get(), HttpStatus.OK);
-		} else
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-
-	}
-
-	@GetMapping("/compare/{ids}")
-	public ResponseEntity<List<Food>> compareFoods(@PathVariable List<Long> ids) {
-			try {
-				List<Food> foods = new ArrayList<Food>();
-
-				if (ids != null || !ids.isEmpty()) {
-
-					foodRepository.findAllById(ids).forEach(foods::add);
-					
-				}
-
-				if (foods.isEmpty()) {
-					return new ResponseEntity<>(HttpStatus.NO_CONTENT);}
-				
-				return new ResponseEntity<>(foods, HttpStatus.OK);
-				
-				
-			} catch (Exception e) {
-				return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-			}
-
 	}
 
 }

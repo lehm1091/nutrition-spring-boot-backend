@@ -18,6 +18,7 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,6 +59,9 @@ public class ApiRestController {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	
+	
 
 	@PostMapping("/categories")
 	public ResponseEntity<FoodCategorie> createFood(@RequestBody FoodCategorie category) {
@@ -72,6 +76,8 @@ public class ApiRestController {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	
 
 	@PutMapping("/foods/{foodid}/add-categories")
 	public ResponseEntity<Food> addCategoriesToFood(@PathVariable Long foodid, @RequestBody Long[] categoriesids) {
@@ -161,6 +167,7 @@ public class ApiRestController {
 
 				if (ids != null && name == null && page == null && size == null) {
 					foodRepository.findAllById(ids).forEach(foods::add);
+					logger.info(ids.toString());
 				} else if (ids == null && name != null && page == null && size == null) {
 					logger.info("name " + name);
 					foodRepository.findByNameIsContaining(name).forEach(foods::add);
@@ -216,8 +223,8 @@ public class ApiRestController {
 
 	}
 
-	@GetMapping("/categories/{category}")
-	public ResponseEntity<List<Food>> getAllTutorials(@PathVariable String category) {
+	@GetMapping("/categories/{category}/foods")
+	public ResponseEntity<List<Food>> getFoodsByName(@PathVariable String category) {
 		try {
 			List<Food> foods = new ArrayList<Food>();
 
@@ -236,5 +243,15 @@ public class ApiRestController {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	  @DeleteMapping("/foods/{id}")
+	  public ResponseEntity<HttpStatus> deleteFood(@PathVariable("id") long id) {
+	    try {
+	      foodRepository.deleteById(id);
+	      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	    } catch (Exception e) {
+	      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
+	  }
 
 }

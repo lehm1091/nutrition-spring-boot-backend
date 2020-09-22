@@ -6,6 +6,9 @@ import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Table(name = "foods")
 public class Food implements Serializable {
@@ -33,61 +36,63 @@ public class Food implements Serializable {
 	@NotNull
 	private Double calories;
 
-	@Column(name = "calories_from_fat")
-	@NotNull
-	private Double caloriesFromFat;
-
-	@Column
-	@NotNull
+	@Column(columnDefinition = "double default 0")
+	
 	private Double protein;
 
-	@Column
+	@Column(columnDefinition = "double default 0")
 	private Double cholesterol;
 
 	@Column
 	private Double carbohydrate;
 
-	@Column(name = "total_sugar")
-	private Double totalSugar;
+	@Column(name = "sugar", columnDefinition = "double default 0")
+	private Double sugar;
 
-	@Column(name = "added_sugar")
+	@Column(name = "added_sugar",columnDefinition = "double default 0")
 	private Double addedSugar;
 
-	@Column
-	private Double fibre;
+	@Column(columnDefinition = "double default 0")
+	private Double fiber;
 
-	@Column(name = "vitamin_a")
+	@Column(name = "vitamin_a", columnDefinition = "double default 0")
 	private Double vitaminA;
 
-	@Column(name = "vitamin_d")
+	@Column(name = "vitamin_d", columnDefinition = "double default 0")
 	private Double vitaminD;
 
-	@Column(name = "vitamin_c")
-	private Double VitaminC;
+	@Column(name = "vitamin_c", columnDefinition = "double default 0")
+	private Double vitaminC;
 
-	@Column
+	@Column(columnDefinition = "double default 0")
 	private Double calcium;
 
-	@Column
+	@Column(columnDefinition = "double default 0")
 	private Double iron;
 
-	@Column
+	@Column(columnDefinition = "double default 0")
 	private Double potassium;
 
-	@Column
+	@Column(columnDefinition = "double default 0")
 	private Double sodium;
 
-	@Column
-	private Double fat;
 
-	@Column(name = "saturated_fat")
+	@Column(name = "saturated_fat", columnDefinition = "double default 0")
 	private Double saturatedFat;
 
-	@Column(name = "transFat")
+	@Column(name = "trans_Fat", columnDefinition = "double default 0")
 	private Double transFat;
+	
+	@Column(name = "monounsaturated_fat", columnDefinition = "double default 0")
+	private Double monounsaturatedFat;
+	
+	@Column(name = "polyunSaturated_fat", columnDefinition = "double default 0")
+	private Double polyunSaturatedFat;
 
-	@Column(name = "total_fat")
-	private Double totalFat;
+	
+	@Column(name = "fat", columnDefinition = "double default 0")
+	private Double fat;
+	
 
 	@OneToMany(mappedBy = "food")
 	private Set<Ingredient> ingredients;
@@ -97,6 +102,7 @@ public class Food implements Serializable {
 			name = "food_has_categories",
 			joinColumns = @JoinColumn(name = "food_id"),
 			inverseJoinColumns = @JoinColumn(name = "food_categorie_id"))
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Set<FoodCategorie> categories;
 
 	public Long getId() {
@@ -131,14 +137,6 @@ public class Food implements Serializable {
 		this.calories = calories;
 	}
 
-	public Double getCaloriesFromFat() {
-		return caloriesFromFat;
-	}
-
-	public void setCaloriesFromFat(Double caloriesFromFat) {
-		this.caloriesFromFat = caloriesFromFat;
-	}
-
 	public Double getProtein() {
 		return protein;
 	}
@@ -163,12 +161,12 @@ public class Food implements Serializable {
 		this.carbohydrate = carbohydrate;
 	}
 
-	public Double getTotalSugar() {
-		return totalSugar;
+	public Double getSugar() {
+		return sugar;
 	}
 
-	public void setTotalSugar(Double totalSugar) {
-		this.totalSugar = totalSugar;
+	public void setSugar(Double sugar) {
+		this.sugar = sugar;
 	}
 
 	public Double getAddedSugar() {
@@ -176,15 +174,15 @@ public class Food implements Serializable {
 	}
 
 	public void setAddedSugar(Double addedSugar) {
-		addedSugar = addedSugar;
+		this.addedSugar = addedSugar;
 	}
 
-	public Double getFibre() {
-		return fibre;
+	public Double getFiber() {
+		return fiber;
 	}
 
-	public void setFibre(Double fibre) {
-		this.fibre = fibre;
+	public void setFiber(Double fibre) {
+		this.fiber = fibre;
 	}
 
 	public Double getVitaminA() {
@@ -204,11 +202,11 @@ public class Food implements Serializable {
 	}
 
 	public Double getVitaminC() {
-		return VitaminC;
+		return vitaminC;
 	}
 
 	public void setVitaminC(Double vitaminC) {
-		VitaminC = vitaminC;
+		this.vitaminC = vitaminC;
 	}
 
 	public Double getCalcium() {
@@ -243,14 +241,6 @@ public class Food implements Serializable {
 		this.sodium = sodium;
 	}
 
-	public Double getFat() {
-		return fat;
-	}
-
-	public void setFat(Double fat) {
-		this.fat = fat;
-	}
-
 	public Double getSaturatedFat() {
 		return saturatedFat;
 	}
@@ -267,12 +257,28 @@ public class Food implements Serializable {
 		this.transFat = transFat;
 	}
 
-	public Double getTotalFat() {
-		return totalFat;
+	public Double getMonounsaturatedFat() {
+		return monounsaturatedFat;
 	}
 
-	public void setTotalFat(Double totalFat) {
-		this.totalFat = totalFat;
+	public void setMonounsaturatedFat(Double monounsaturatedFat) {
+		this.monounsaturatedFat = monounsaturatedFat;
+	}
+
+	public Double getPolyunSaturatedFat() {
+		return polyunSaturatedFat;
+	}
+
+	public void setPolyunSaturatedFat(Double polyunSaturatedFat) {
+		this.polyunSaturatedFat = polyunSaturatedFat;
+	}
+
+	public Double getFat() {
+		return fat;
+	}
+
+	public void setFat(Double fat) {
+		this.fat = fat;
 	}
 
 	public Set<Ingredient> getIngredients() {
@@ -291,14 +297,8 @@ public class Food implements Serializable {
 		this.categories = categories;
 	}
 
-	@Override
-	public String toString() {
-		return String.format(
-				"Food [id=%s, name=%s, servingSize=%s, calories=%s, caloriesFromFat=%s, protein=%s, cholesterol=%s, carbohydrate=%s, totalSugar=%s, addedSugar=%s, fibre=%s, vitaminA=%s, vitaminD=%s, VitaminC=%s, calcium=%s, iron=%s, potassium=%s, sodium=%s, fat=%s, saturatedFat=%s, transFat=%s, totalFat=%s, ingredients=%s, categories=%s]",
-				id, name, servingSize, calories, caloriesFromFat, protein, cholesterol, carbohydrate, totalSugar,
-				addedSugar, fibre, vitaminA, vitaminD, VitaminC, calcium, iron, potassium, sodium, fat, saturatedFat,
-				transFat, totalFat, ingredients, categories);
-	}
+	
+	
 
 	
 }

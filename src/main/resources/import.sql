@@ -6,5 +6,11 @@ insert into food_categories(id,name) values (5,"Fish");
 insert into food_categories(id,name) values (6,"Cereals");
 insert into food_categories(id,name) values (7,"Pasta");
 insert into food_categories(id,name) values (8,"Other");
-
-
+insert into foods values(1,'0', '52', '384', '67', '0', '6.3', '9.8', '4.2', '0', 'oats', '0', '350', '16', '1.11', '100', '4', '1.45', '0', '0', '0', '0');
+insert into foods values(2, '0', '61', '599', '15.26', '0', '52.5', '9.4', '1.52', '25.936', 'mani', '15.269', '726', '28.03', '8.673', '100', '320', '4.18', '0', '0', '0', '0');
+insert into foods values(3, '0', '22', '25', '15.26', '0', '0.1', '2.5', '0.4', '0.099', 'Coliflor', '0.014', '303', '5.3', '0.032', '100', '30', '2.4', '0', '1', '46.4', '0');
+insert into foods values(4, '0', '47', '34', '6.64', '0', '0.37', '2.6', '0.73', '0.038', 'Brocoli', '0.011', '316', '2.82', '0.039', '100', '30', '2.82', '0', '31', '89.2', '0');
+INSERT INTO food_has_categories values(1,6);
+INSERT INTO food_has_categories values(2,3);
+INSERT INTO food_has_categories values(3,2);
+INSERT INTO food_has_categories values(4,2);

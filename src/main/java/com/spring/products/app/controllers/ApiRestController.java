@@ -56,12 +56,10 @@ public class ApiRestController {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());
+			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
-	
-	
 
 	@PostMapping("/categories")
 	public ResponseEntity<FoodCategorie> createFood(@RequestBody FoodCategorie category) {
@@ -76,8 +74,6 @@ public class ApiRestController {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
-	
 
 	@PutMapping("/foods/{foodid}/add-categories")
 	public ResponseEntity<Food> addCategoriesToFood(@PathVariable Long foodid, @RequestBody Long[] categoriesids) {
@@ -85,11 +81,11 @@ public class ApiRestController {
 		try {
 			Food _food = foodRepository.findById(foodid).orElse(null);
 			List<FoodCategorie> _categories = new ArrayList<>(_food.getCategories());
-			
-			List<Long> ids=new ArrayList<>();
-			for(Long actual:categoriesids) {
+			List<Long> ids = new ArrayList<>();
+			for (Long actual : categoriesids) {
 				ids.add(actual);
 			}
+
 			categoryRepository.findAllById(ids).forEach(_categories::add);
 			_food.setCategories(new HashSet<FoodCategorie>(_categories));
 			foodRepository.save(_food);
@@ -101,26 +97,48 @@ public class ApiRestController {
 		}
 
 	}
-	
+
 	@GetMapping("/foods/{foodid}")
 	public ResponseEntity<Food> findOneFood(@PathVariable Long foodid) {
 
 		try {
 			Food _food = foodRepository.findById(foodid).orElse(null);
-			
-			if(_food!=null) {
+
+			if (_food != null) {
 				return new ResponseEntity<>(_food, HttpStatus.OK);
-				
-			}
-			else {
+
+			} else {
 				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 			}
-	
+
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
+	}
+
+	@PutMapping("/foods/{foodid}")
+	public ResponseEntity<Food> updateOne(@PathVariable Long foodid, @RequestBody Food food) {
+		logger.error("id es" + food.getId().toString());
+
+		try {
+			Food _food = foodRepository.findById(foodid).orElse(null);
+			if (_food == null) {
+				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+			}
+
+			_food = food;
+
+			_food = foodRepository.save(_food);
+
+			return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	@GetMapping("/categories")
@@ -130,7 +148,7 @@ public class ApiRestController {
 			categoryRepository.findAll().forEach(_categories::add);
 
 			if (_categories.isEmpty()) {
-				return new ResponseEntity<>(_categories,HttpStatus.NOT_FOUND);
+				return new ResponseEntity<>(_categories, HttpStatus.NOT_FOUND);
 			}
 			return new ResponseEntity<>(_categories, HttpStatus.OK);
 		} catch (Exception e) {
@@ -152,12 +170,9 @@ public class ApiRestController {
 	}
 
 	@GetMapping("/foods")
-	public ResponseEntity<List<Food>> findFoods(
-			@RequestParam(required = false) List<Long> ids,
-			@RequestParam(required = false) String name,
-			@RequestParam(required = false) Integer page,
-			@RequestParam(required = false) Integer size,
-			@RequestParam(required = false) String[] sort) {
+	public ResponseEntity<List<Food>> findFoods(@RequestParam(required = false) List<Long> ids,
+			@RequestParam(required = false) String name, @RequestParam(required = false) Integer page,
+			@RequestParam(required = false) Integer size, @RequestParam(required = false) String[] sort) {
 
 		List<Food> foods = new ArrayList<Food>();
 		try {
@@ -243,15 +258,15 @@ public class ApiRestController {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
-	  @DeleteMapping("/foods/{id}")
-	  public ResponseEntity<HttpStatus> deleteFood(@PathVariable("id") long id) {
-	    try {
-	      foodRepository.deleteById(id);
-	      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-	    } catch (Exception e) {
-	      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
-	  }
+
+	@DeleteMapping("/foods/{id}")
+	public ResponseEntity<HttpStatus> deleteFood(@PathVariable("id") long id) {
+		try {
+			foodRepository.deleteById(id);
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 }

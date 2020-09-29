@@ -24,16 +24,16 @@ public class Food implements Serializable {
 	private Long id;
 
 	@Column
-	@NotNull
+	@NotNull(message=" name no puede ser nulo")
 	@NotEmpty
 	private String name;
 
 	@Column(name = "serving_size")
-	@NotNull
+	@NotNull(message=" serving no puede ser nulo")
 	private Double servingSize;
 
 	@Column
-	@NotNull
+	@NotNull(message=" calories no puede ser nulo")
 	private Double calories;
 
 	@Column(columnDefinition = "double default 0")
@@ -87,7 +87,7 @@ public class Food implements Serializable {
 	private Double monounsaturatedFat;
 	
 	@Column(name = "polyunSaturated_fat", columnDefinition = "double default 0")
-	private Double polyunSaturatedFat;
+	private Double polyunsaturatedFat;
 
 	
 	@Column(name = "fat", columnDefinition = "double default 0")
@@ -265,12 +265,12 @@ public class Food implements Serializable {
 		this.monounsaturatedFat = monounsaturatedFat;
 	}
 
-	public Double getPolyunSaturatedFat() {
-		return polyunSaturatedFat;
+	public Double getPolyunsaturatedFat() {
+		return polyunsaturatedFat;
 	}
 
-	public void setPolyunSaturatedFat(Double polyunSaturatedFat) {
-		this.polyunSaturatedFat = polyunSaturatedFat;
+	public void setPolyunsaturatedFat(Double polyunSaturatedFat) {
+		this.polyunsaturatedFat = polyunSaturatedFat;
 	}
 
 	public Double getFat() {
